@@ -103,9 +103,16 @@ async function run() {
     })
     // my request food data get the clint side ***************************
 
-    app.get("/request", async (req, res) => {
+    app.get("/myrequest", async (req, res) => {
       const email = req.query.email;
-      const result = await foodRequestCollection.find({ userEmail : email }).toArray();
+      const result = await foodRequestCollection.find({ userEamil : email }).toArray();
+      res.send(result);
+    })
+    // delete my request food data get the clint side and sever side ***************************
+
+    app.delete("/deletereq/:id", async (req, res) => {
+      const id = req.params.id;
+      const result = await foodRequestCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
     })
 
