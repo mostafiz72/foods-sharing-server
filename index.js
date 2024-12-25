@@ -85,7 +85,13 @@ async function run() {
       res.send(result);
     })
 
-    
+     // delete my posted food data form mongodb ***************************
+
+     app.delete("/delete/:id", async(req, res)=>{
+      const id = req.params.id;
+      const result = await foodCollection.deleteOne({_id: new ObjectId(id)});
+      res.send(result);
+  })
 
     /// add foods data save in mongodb database
 
