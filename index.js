@@ -101,6 +101,13 @@ async function run() {
       const result = await foodRequestCollection.insertOne(foodData);
       res.send(result);
     })
+    // my request food data get the clint side ***************************
+
+    app.get("/request", async (req, res) => {
+      const email = req.query.email;
+      const result = await foodRequestCollection.find({ userEmail : email }).toArray();
+      res.send(result);
+    })
 
     /// add foods data save in mongodb database
 
