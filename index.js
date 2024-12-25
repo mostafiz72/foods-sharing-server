@@ -1,8 +1,9 @@
+require('dotenv').config();
 const express = require('express')
 const app = express()
 const cors = require('cors');
 const port = process.env.PORT || 5000
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 //// middleware configuration------------
 
@@ -35,10 +36,47 @@ async function run() {
     // await client.db("admin").command({ ping: 1 });
     console.log("You successfully connected to MongoDB!");
 
+    // Use the client to perform database operations
+    const foodCollection = client.db("foodSharing").collection("foods");
+
+    app.get("/foods", async(req, res)=>{
+      const result = await foodCollection.find().toArray();
+      res.send(result);
+    })
+
+    // get the single foods data --------
+
+    app.get("/food/:id", async(req, res)=>{
+      const id = req.params.id;
+      const result = await foodCollection.findOne({_id: new ObjectId(id)});
+      res.send(result);
+    })
+  
+    app.get("/allfoods", async(req, res)=>{
+      const result = await foodCollection.find().limit(6).sort( { quantity: -1 } ).toArray();
+      res.send(result);
+    })
+
+    //// get the posted user data ---------------
+
+    app.get("/posted", async(req, res)=>{
+      const email = req.query.email;
+      const result = await foodCollection.find({"donator.email" : email}).toArray();
+      res.send(result);
+    })
+
+    /// add foods data save in mongodb database
+
+    app.post("/addfoods", async(req, res)=>{
+      const foodData = req.body;
+      const result = await foodCollection.insertOne(foodData);
+      res.send(result);
+    })
+
     
   } finally {
     // Ensures that the client will close when you finish/error
-    await client.close();
+    // await client.close();
   }
 }
 run().catch(console.dir);
