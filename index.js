@@ -11,8 +11,8 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-    res.send('Hello World!')
-  })
+  res.send('Hello World!')
+})
 
 /// mongodb configuration starting here now ---------------
 
@@ -38,37 +38,38 @@ async function run() {
 
     // Use the client to perform database operations
     const foodCollection = client.db("foodSharing").collection("foods");
+    const foodRequestCollection = client.db("foodSharing").collection("requesfoods");
 
-    app.get("/foods", async(req, res)=>{
+    app.get("/foods", async (req, res) => {
       const result = await foodCollection.find().toArray();
       res.send(result);
     })
 
     // get the single foods data --------
 
-    app.get("/food/:id", async(req, res)=>{
+    app.get("/food/:id", async (req, res) => {
       const id = req.params.id;
-      const result = await foodCollection.findOne({_id: new ObjectId(id)});
+      const result = await foodCollection.findOne({ _id: new ObjectId(id) });
       res.send(result);
     })
-  
-    app.get("/allfoods", async(req, res)=>{
-      const result = await foodCollection.find().limit(6).sort( { quantity: -1 } ).toArray();
+
+    app.get("/allfoods", async (req, res) => {
+      const result = await foodCollection.find().limit(6).sort({ quantity: -1 }).toArray();
       res.send(result);
     })
 
     //// get the posted user data ---------------
 
-    app.get("/posted", async(req, res)=>{
+    app.get("/posted", async (req, res) => {
       const email = req.query.email;
-      const result = await foodCollection.find({"donator.email" : email}).toArray();
+      const result = await foodCollection.find({ "donator.email": email }).toArray();
       res.send(result);
     })
 
     /// Update Movie data in database and UI 
-    app.put('/update/:id', async(req, res) => {
+    app.put('/update/:id', async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateFood = req.body;
       const updated = {
@@ -85,23 +86,31 @@ async function run() {
       res.send(result);
     })
 
-     // delete my posted food data form mongodb ***************************
+    // delete my posted food data form mongodb ***************************
 
-     app.delete("/delete/:id", async(req, res)=>{
+    app.delete("/delete/:id", async (req, res) => {
       const id = req.params.id;
-      const result = await foodCollection.deleteOne({_id: new ObjectId(id)});
+      const result = await foodCollection.deleteOne({ _id: new ObjectId(id) });
       res.send(result);
-  })
+    })
+
+    // request my posted food data in mongodb ***************************
+
+    app.post("/request", async (req, res) => {
+      const foodData = req.body;
+      const result = await foodRequestCollection.insertOne(foodData);
+      res.send(result);
+    })
 
     /// add foods data save in mongodb database
 
-    app.post("/addfoods", async(req, res)=>{
+    app.post("/addfoods", async (req, res) => {
       const foodData = req.body;
       const result = await foodCollection.insertOne(foodData);
       res.send(result);
     })
 
-    
+
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
