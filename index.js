@@ -65,6 +65,28 @@ async function run() {
       res.send(result);
     })
 
+    /// Update Movie data in database and UI 
+    app.put('/update/:id', async(req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id)};
+      const options = { upsert: true };
+      const updateFood = req.body;
+      const updated = {
+        $set: {
+          foodName: updateFood.foodName,
+          foodImg: updateFood.foodImg,
+          quantity: updateFood.quantity,
+          location: updateFood.location,
+          updateFood: updateFood.updateFood,
+          foodStatus: updateFood.foodStatus
+        }
+      }
+      const result = await foodCollection.updateOne(filter, updated, options);
+      res.send(result);
+    })
+
+    
+
     /// add foods data save in mongodb database
 
     app.post("/addfoods", async(req, res)=>{
