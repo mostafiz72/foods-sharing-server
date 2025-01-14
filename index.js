@@ -24,8 +24,6 @@ app.use(cookieParser());  /// atar jonno amara sob jaiga theke cookie access kor
 
 const verifyToken = (req, res, next) => {
   const token = req.cookies?.token;
-  console.log("Tumi tomar api theke ai token ta access korte perteso", token)
-
   // token jodi na thake taile amra tare ekta error message dibo
 
   if (!token) {
@@ -96,12 +94,7 @@ async function run() {
         res.send({ success: true });
       })
 
-    app.get("/foods", verifyToken, async (req, res) => {
-
-      if(req.user?.email !== req.query?.email){
-        return res.status(401).send({message: 'Unauthorized access'});
-    }
-
+    app.get("/foods", async (req, res) => {
       const result = await foodCollection.find().toArray();
       res.send(result);
     })
@@ -121,8 +114,12 @@ async function run() {
 
     //// get the posted user data ---------------
 
-    app.get("/posted", async (req, res) => {
+    app.get("/posted", verifyToken, async (req, res) => {
       const email = req.query.email;
+      if(req.user?.email !== req.query?.email){
+        return res.status(401).send({message: 'Unauthorized access'});
+    }
+
       const result = await foodCollection.find({ "donator.email": email }).toArray();
       res.send(result);
     })
@@ -130,6 +127,8 @@ async function run() {
     /// Update Movie data in database and UI 
     app.put('/update/:id', async (req, res) => {
       const id = req.params.id;
+      // console.log(id);
+      
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateFood = req.body;
@@ -143,7 +142,7 @@ async function run() {
           foodStatus: updateFood.foodStatus
         }
       }
-      const result = await foodCollection.updateOne(filter, updated, options);
+      const result = await foodCollection.updateOne(filter, updated, options); 
       res.send(result);
     })
 
@@ -162,6 +161,7 @@ async function run() {
       const result = await foodRequestCollection.insertOne(foodData);
       res.send(result);
     })
+
     // my request food data get the clint side ***************************
 
     app.get("/myrequest", async (req, res) => {
